@@ -15,7 +15,7 @@ class sanGuoSpider:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.25 Safari/537.36 Core/1.70.3741.400 QQBrowser/10.5.3863.400'}
 
     def parse_url(self):
-        response = requests.get(self.url,self.headers)
+        response = requests.get(self.url, self.headers)
         response.encoding = response.apparent_encoding
 
         return response.text
@@ -24,18 +24,19 @@ class sanGuoSpider:
         soup = BeautifulSoup(page_text, 'lxml')
         # 解析章节标题和详情页url
         li_list = soup.select('.book-mulu > ul > li')
-        with open('./sanguo3.txt',"w",encoding='utf-8') as f:
+        with open('./sanguo3.txt', "w", encoding='utf-8') as f:
             for li in li_list:
                 title = li.a.string
                 detail_url = 'http://www.shicimingju.com' + li.a['href']  # 超链接不是完整URL，需要点击超链接查看完整URL
                 # 对详情页发起请求，解析出章节内容
-                detail_page_text = requests.get(url=detail_url, headers=self.headers).text
+                # detail_page_text = requests.get(url=detail_url, headers=self.headers).text
+                html_content = requests.get(detail_url, headers=self.headers).content.decode()
                 # 解析出详情页中相关的章节内容
-                detail_soup = BeautifulSoup(detail_page_text, 'lxml')
+                detail_soup = BeautifulSoup(html_content, 'lxml')
                 div_tag = detail_soup.find('div', class_='chapter_content')
                 # 解析到了章节的内容
                 content = div_tag.text
-                f.write(title + ': ' + detail_url + '\n')
+                f.write(title + "----> " + detail_url + content + '\n\t')
                 print(title, "爬取成功!!!")
 
     def run(self):  # 实现主要逻辑
